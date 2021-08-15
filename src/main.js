@@ -4,6 +4,8 @@ import router from './router'
 import store from './store'
 // 引入字体图标
 import './assets/styles/icon.css'
+// 引入字体
+import './assets/fonts/daysOne.css'
 
 Vue.config.productionTip = false
 
