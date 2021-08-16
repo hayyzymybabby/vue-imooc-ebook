@@ -1,6 +1,6 @@
 <template>
   <div class="home">
-    <span class="icon-bookmark"></span>
+    1
   </div>
 </template>
 
@@ -10,7 +10,5 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .icon-bookmark {
-    font-size: 20px;
-  }
+
 </style>
