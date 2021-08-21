@@ -1,11 +1,12 @@
 <template>
-  <div class="home">
-    1
+  <div class="ebook-reader">
+    <div id="read"></div>
   </div>
 </template>
 
 <script>
 export default {
+
 }
 </script>
 
