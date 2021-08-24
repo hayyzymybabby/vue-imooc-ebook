@@ -61,7 +61,7 @@ export default {
       this.currentBook.rendition.themes.fontSize(fontSize + 'px')
     },
     showFontFamilyPopup () {
-      console.log('ok')
+      this.setFontFamilyVisible(true)
     }
   }
 }
