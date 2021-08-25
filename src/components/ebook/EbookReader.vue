@@ -7,6 +7,12 @@
 <script>
 import { ebookMixin } from '@/utils/mixin'
 import Epub from 'epubjs'
+import {
+  getFontFamily,
+  getFontSize,
+  saveFontFamily,
+  saveFontSize
+} from '@/utils/localStorage'
 global.ePub = Epub
 export default {
   mixins: [ebookMixin],
@@ -35,6 +41,24 @@ export default {
       this.setSettingVisible(-1)
       this.setFontFamilyVisible(false)
     },
+    initFontSize () {
+      const fontSize = getFontSize(this.fileName)
+      if (!fontSize) {
+        saveFontSize(this.fileName, this.defaultFontSize)
+      } else {
+        this.rendition.themes.fontSize(fontSize + 'px')
+        this.setDefaultFontSize(fontSize)
+      }
+    },
+    initFontFamily () {
+      const font = getFontFamily(this.fileName)
+      if (!font) {
+        saveFontFamily(this.fileName, this.defaultFontFamily)
+      } else {
+        this.rendition.themes.font(font)
+        this.setDefaultFontFamily(font)
+      }
+    },
     initEpub () {
       const url = 'http://192.168.50.236:9001/epub/' + this.fileName + '.epub'
       this.book = new Epub(url)
@@ -43,7 +67,10 @@ export default {
         width: innerWidth,
         height: innerHeight
       })
-      this.rendition.display()
+      this.rendition.display().then(() => {
+        this.initFontSize()
+        this.initFontFamily()
+      })
       this.rendition.on('touchstart', (event) => {
         this.touchStartX = event.changedTouches[0].clientX
         this.touchStartTime = event.timeStamp
@@ -60,12 +87,20 @@ export default {
         }
         event.stopPropagation()
       })
-      this.rendition.hooks.content.register(contents => {
+      this.rendition.hooks.content.register((contents) => {
         Promise.all([
-          contents.addStylesheet(`${process.env.VUE_APP_RES_URL}/fonts/daysOne.css`),
-          contents.addStylesheet(`${process.env.VUE_APP_RES_URL}/fonts/cabin.css`),
-          contents.addStylesheet(`${process.env.VUE_APP_RES_URL}/fonts/montserrat.css`),
-          contents.addStylesheet(`${process.env.VUE_APP_RES_URL}/fonts/tangerine.css`)
+          contents.addStylesheet(
+            `${process.env.VUE_APP_RES_URL}/fonts/daysOne.css`
+          ),
+          contents.addStylesheet(
+            `${process.env.VUE_APP_RES_URL}/fonts/cabin.css`
+          ),
+          contents.addStylesheet(
+            `${process.env.VUE_APP_RES_URL}/fonts/montserrat.css`
+          ),
+          contents.addStylesheet(
+            `${process.env.VUE_APP_RES_URL}/fonts/tangerine.css`
+          )
         ]).then(() => {
           console.log('字体加载完成。。。')
         })
@@ -73,6 +108,7 @@ export default {
     }
   },
   mounted () {
+    console.log(process.env.VUE_APP_RES_URL)
     const fileName = this.$route.params.fileName.split('|').join('/')
     this.setFileName(fileName).then(() => {
       this.initEpub()
