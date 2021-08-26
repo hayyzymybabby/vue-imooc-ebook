@@ -10,8 +10,10 @@ import Epub from 'epubjs'
 import {
   getFontFamily,
   getFontSize,
+  getTheme,
   saveFontFamily,
-  saveFontSize
+  saveFontSize,
+  saveTheme
 } from '@/utils/localStorage'
 global.ePub = Epub
 export default {
@@ -41,6 +43,18 @@ export default {
       this.setSettingVisible(-1)
       this.setFontFamilyVisible(false)
     },
+    initTheme () {
+      let defaultTheme = getTheme(this.fileName)
+      if (!defaultTheme) {
+        defaultTheme = this.themeList[0].name
+        this.setDefaultTheme(defaultTheme)
+        saveTheme(this.fileName, defaultTheme)
+      }
+      this.themeList.forEach(theme => {
+        this.rendition.themes.register(theme.name, theme.style)
+      })
+      this.rendition.themes.select(defaultTheme)
+    },
     initFontSize () {
       const fontSize = getFontSize(this.fileName)
       if (!fontSize) {
@@ -68,6 +82,7 @@ export default {
         height: innerHeight
       })
       this.rendition.display().then(() => {
+        this.initTheme()
         this.initFontSize()
         this.initFontFamily()
       })
