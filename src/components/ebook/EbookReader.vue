@@ -74,10 +74,7 @@ export default {
         this.setDefaultFontFamily(font)
       }
     },
-    initEpub () {
-      const url = process.env.VUE_APP_RES_URL + '/epub/' + this.fileName + '.epub'
-      this.book = new Epub(url)
-      this.setCurrentBook(this.book)
+    initRendition () {
       this.rendition = this.book.renderTo('read', {
         width: innerWidth,
         height: innerHeight
@@ -87,22 +84,6 @@ export default {
         this.initFontSize()
         this.initFontFamily()
         this.initGlobalStyle()
-      })
-      this.rendition.on('touchstart', (event) => {
-        this.touchStartX = event.changedTouches[0].clientX
-        this.touchStartTime = event.timeStamp
-      })
-      this.rendition.on('touchend', (event) => {
-        const offsetX = event.changedTouches[0].clientX - this.touchStartX
-        const time = event.timeStamp - this.touchStartTime
-        if (time < 500 && offsetX > 40) {
-          this.prevPage()
-        } else if (time < 500 && offsetX < -40) {
-          this.nextPage()
-        } else {
-          this.toggleTitleAndMenu()
-        }
-        event.stopPropagation()
       })
       this.rendition.hooks.content.register((contents) => {
         Promise.all([
@@ -121,6 +102,38 @@ export default {
         ]).then(() => {
           console.log('字体加载完成。。。')
         })
+      })
+    },
+    initGesture () {
+      this.rendition.on('touchstart', (event) => {
+        this.touchStartX = event.changedTouches[0].clientX
+        this.touchStartTime = event.timeStamp
+      })
+      this.rendition.on('touchend', (event) => {
+        const offsetX = event.changedTouches[0].clientX - this.touchStartX
+        const time = event.timeStamp - this.touchStartTime
+        if (time < 500 && offsetX > 40) {
+          this.prevPage()
+        } else if (time < 500 && offsetX < -40) {
+          this.nextPage()
+        } else {
+          this.toggleTitleAndMenu()
+        }
+        event.preventDefault()
+        event.stopPropagation()
+      })
+    },
+    initEpub () {
+      const url = process.env.VUE_APP_RES_URL + '/epub/' + this.fileName + '.epub'
+      this.book = new Epub(url)
+      this.setCurrentBook(this.book)
+      this.initRendition()
+      this.initGesture()
+      this.book.ready.then(() => {
+        return this.book.locations.generate(750 * (window.innerWidth / 375) * (getFontSize(this.fileName) / 16))
+      }).then(locations => {
+        // console.log(locations)
+        this.setBookAvailable(true)
       })
     }
   },
