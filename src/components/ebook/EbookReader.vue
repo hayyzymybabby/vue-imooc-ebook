@@ -15,6 +15,7 @@ import {
   saveFontSize,
   saveTheme
 } from '@/utils/localStorage'
+
 global.ePub = Epub
 export default {
   mixins: [ebookMixin],
@@ -47,9 +48,9 @@ export default {
       let defaultTheme = getTheme(this.fileName)
       if (!defaultTheme) {
         defaultTheme = this.themeList[0].name
-        this.setDefaultTheme(defaultTheme)
         saveTheme(this.fileName, defaultTheme)
       }
+      this.setDefaultTheme(defaultTheme)
       this.themeList.forEach(theme => {
         this.rendition.themes.register(theme.name, theme.style)
       })
@@ -74,7 +75,7 @@ export default {
       }
     },
     initEpub () {
-      const url = 'http://192.168.50.236:9001/epub/' + this.fileName + '.epub'
+      const url = process.env.VUE_APP_RES_URL + '/epub/' + this.fileName + '.epub'
       this.book = new Epub(url)
       this.setCurrentBook(this.book)
       this.rendition = this.book.renderTo('read', {
@@ -85,6 +86,7 @@ export default {
         this.initTheme()
         this.initFontSize()
         this.initFontFamily()
+        this.initGlobalStyle()
       })
       this.rendition.on('touchstart', (event) => {
         this.touchStartX = event.changedTouches[0].clientX
