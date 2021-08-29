@@ -100,7 +100,7 @@ export default {
             `${process.env.VUE_APP_RES_URL}/fonts/tangerine.css`
           )
         ]).then(() => {
-          console.log('字体加载完成。。。')
+          // console.log('字体加载完成。。。')
         })
       })
     },

@@ -7,8 +7,8 @@
           <span class="icon-forward"></span>
         </div>
         <div class="progress-wrapper">
-          <div class="progress-icon-wrapper">
-            <span class="icon-back" @click="prevSection"></span>
+          <div class="progress-icon-wrapper" @click="prevSection">
+            <span class="icon-back"></span>
           </div>
           <input
             class="progress"
@@ -22,8 +22,8 @@
             :disabled="!bookAvailable"
             ref="progress"
           />
-          <div class="progress-icon-wrapper">
-            <span class="icon-forward" @click="nextSection"></span>
+          <div class="progress-icon-wrapper" @click="nextSection">
+            <span class="icon-forward"></span>
           </div>
         </div>
         <div class="text-wrapper">
@@ -51,14 +51,37 @@ export default {
       })
     },
     displayProgress () {
-      const cfi = this.currentBook.locations.cfiFromPercentage(this.progress / 100)
+      const cfi = this.currentBook.locations.cfiFromPercentage(
+        this.progress / 100
+      )
       this.currentBook.rendition.display(cfi)
     },
     updateProgressBg () {
       this.$refs.progress.style.backgroundSize = `${this.progress}% 100%`
     },
-    prevSection () {},
-    nextSection () {}
+    prevSection () {
+      if (this.section > 0 && this.bookAvailable) {
+        this.setSection(this.section - 1).then(() => {
+          this.displaySection()
+        })
+      }
+    },
+    nextSection () {
+      if (
+        this.section < this.currentBook.spine.length - 1 &&
+        this.bookAvailable
+      ) {
+        this.setSection(this.section + 1).then(() => {
+          this.displaySection()
+        })
+      }
+    },
+    displaySection () {
+      const sectionInfo = this.currentBook.section(this.section)
+      if (sectionInfo && sectionInfo.href) {
+        this.currentBook.rendition.display(sectionInfo.href)
+      }
+    }
   },
   updated () {
     this.updateProgressBg()
