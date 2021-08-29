@@ -10,6 +10,7 @@ import Epub from 'epubjs'
 import {
   getFontFamily,
   getFontSize,
+  getLocation,
   getTheme,
   saveFontFamily,
   saveFontSize,
@@ -22,13 +23,17 @@ export default {
   methods: {
     prevPage () {
       if (this.rendition) {
-        this.rendition.prev()
+        this.rendition.prev().then(() => {
+          this.refreshLocation()
+        })
         this.hideTitleAndMenu()
       }
     },
     nextPage () {
       if (this.rendition) {
-        this.rendition.next()
+        this.rendition.next().then(() => {
+          this.refreshLocation()
+        })
         this.hideTitleAndMenu()
       }
     },
@@ -51,7 +56,7 @@ export default {
         saveTheme(this.fileName, defaultTheme)
       }
       this.setDefaultTheme(defaultTheme)
-      this.themeList.forEach(theme => {
+      this.themeList.forEach((theme) => {
         this.rendition.themes.register(theme.name, theme.style)
       })
       this.rendition.themes.select(defaultTheme)
@@ -79,7 +84,8 @@ export default {
         width: innerWidth,
         height: innerHeight
       })
-      this.rendition.display().then(() => {
+      const location = getLocation(this.fileName)
+      this.display(location, () => {
         this.initTheme()
         this.initFontSize()
         this.initFontFamily()
@@ -124,17 +130,22 @@ export default {
       })
     },
     initEpub () {
-      const url = process.env.VUE_APP_RES_URL + '/epub/' + this.fileName + '.epub'
+      const url =
+        process.env.VUE_APP_RES_URL + '/epub/' + this.fileName + '.epub'
       this.book = new Epub(url)
       this.setCurrentBook(this.book)
       this.initRendition()
       this.initGesture()
-      this.book.ready.then(() => {
-        return this.book.locations.generate(750 * (window.innerWidth / 375) * (getFontSize(this.fileName) / 16))
-      }).then(locations => {
-        // console.log(locations)
-        this.setBookAvailable(true)
-      })
+      this.book.ready
+        .then(() => {
+          return this.book.locations.generate(
+            750 * (window.innerWidth / 375) * (getFontSize(this.fileName) / 16)
+          )
+        })
+        .then((locations) => {
+          this.setBookAvailable(true)
+          this.refreshLocation()
+        })
     }
   },
   mounted () {
