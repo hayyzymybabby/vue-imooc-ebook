@@ -1,7 +1,7 @@
 $ratio: 375 / 10;
 
 @function px2rem($px) {
-  @return $px / $ratio + rem;
+  @return $px / $ratio+rem;
 }
 
 @mixin center {
@@ -20,4 +20,10 @@ $ratio: 375 / 10;
   display: flex;
   justify-content: flex-end;
   align-items: center;
+}
+
+@mixin ellipsis {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }

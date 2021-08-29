@@ -27,7 +27,8 @@
           </div>
         </div>
         <div class="text-wrapper">
-          <span>{{ bookAvailable ? progress + "%" : "加载中..." }}</span>
+          <span class="progrss-section-text">{{ getSectionName }}</span>
+          <span>({{ bookAvailable ? progress + "%" : "加载中..." }})</span>
         </div>
       </div>
     </div>
@@ -38,6 +39,17 @@
 import { ebookMixin } from '@/utils/mixin'
 export default {
   mixins: [ebookMixin],
+  computed: {
+    getSectionName () {
+      if (this.section) {
+        const sectionInfo = this.currentBook.section(this.section)
+        if (sectionInfo && sectionInfo.href) {
+          return this.currentBook.navigation.get(sectionInfo.href).label
+        }
+      }
+      return ''
+    }
+  },
   methods: {
     onProgressChange (progress) {
       this.setProgress(progress).then(() => {
@@ -79,8 +91,17 @@ export default {
     displaySection () {
       const sectionInfo = this.currentBook.section(this.section)
       if (sectionInfo && sectionInfo.href) {
-        this.currentBook.rendition.display(sectionInfo.href)
+        this.currentBook.rendition.display(sectionInfo.href).then(() => {
+          this.refreshLocation()
+        })
       }
+    },
+    refreshLocation () {
+      const currentLocation = this.currentBook.rendition.currentLocation()
+      const progress = this.currentBook.locations.percentageFromCfi(
+        currentLocation.start.cfi
+      )
+      this.setProgress(Math.floor(progress * 100))
     }
   },
   updated () {
@@ -151,7 +172,12 @@ export default {
       width: 100%;
       color: #333;
       font-size: px2rem(12);
-      text-align: center;
+      padding: 0 px2rem(15);
+      box-sizing: border-box;
+      @include center;
+      .progrss-section-text {
+        @include ellipsis;
+      }
     }
   }
 }
