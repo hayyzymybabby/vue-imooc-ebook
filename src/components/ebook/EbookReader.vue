@@ -124,6 +124,16 @@ export default {
         event.stopPropagation()
       })
     },
+    parseBook () {
+      this.book.loaded.cover.then(cover => {
+        this.book.archive.createUrl(cover).then(url => {
+          this.setCover(url)
+        })
+      })
+      this.book.loaded.metadata.then(metadata => {
+        this.setMetadata(metadata)
+      })
+    },
     initEpub () {
       const url =
         process.env.VUE_APP_RES_URL + '/epub/' + this.fileName + '.epub'
@@ -131,6 +141,7 @@ export default {
       this.setCurrentBook(this.book)
       this.initRendition()
       this.initGesture()
+      this.parseBook()
       this.book.ready
         .then(() => {
           return this.book.locations.generate(
