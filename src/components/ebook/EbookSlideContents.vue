@@ -10,6 +10,7 @@
           type="text"
           :placeholder="$t('book.searchHint')"
           @click="showSearchPage"
+          @keyup.enter.exact="search"
           v-model="searchText"
         />
       </div>
@@ -52,7 +53,7 @@
           class="slide-contents-item-label"
           :class="{ selected: section === index }"
           :style="contentItemStyle(item)"
-          @click="displayNavigation(item.href)"
+          @click="displayContent(item.href)"
           >{{ item.label }}</span
         >
         <span class="slide-contents-item-page"></span>
@@ -64,9 +65,13 @@
       :bottom="48"
       v-show="searchVisible"
     >
-      <div class="slide-search-item" v-for="(item, index) in searchList" :key="index">
-        {{item.excerpt}}
-      </div>
+      <div
+        class="slide-search-item"
+        v-for="(item, index) in searchList"
+        :key="index"
+        v-html="item.excerpt"
+        @click="displayContent(item.cfi, true)"
+      ></div>
     </scroll>
   </div>
 </template>
@@ -98,11 +103,6 @@ export default {
         )
       ).then((results) => Promise.resolve([].concat.apply([], results)))
     },
-    displayNavigation (target) {
-      this.display(target, () => {
-        this.hideTitleAndMenu()
-      })
-    },
     contentItemStyle (item) {
       return {
         marginLeft: `${px2rem(item.level * 15)}rem`
@@ -115,13 +115,29 @@ export default {
       this.searchVisible = false
       this.searchText = ''
       this.searchList = null
+    },
+    search () {
+      if (this.searchText && this.searchText.length > 0) {
+        this.doSearch(this.searchText).then((list) => {
+          this.searchList = list
+          this.searchList.map((item) => {
+            item.excerpt = item.excerpt.replace(
+              this.searchText,
+              `<span class="content-search-text">${this.searchText}</span>`
+            )
+            return item
+          })
+        })
+      }
+    },
+    displayContent (target, highlight = false) {
+      this.display(target, () => {
+        this.hideTitleAndMenu()
+        if (highlight) {
+          this.currentBook.rendition.annotations.highlight(target)
+        }
+      })
     }
-  },
-  mounted () {
-    this.doSearch('add').then(list => {
-      this.searchList = list
-      console.log(list)
-    })
   }
 }
 </script>
