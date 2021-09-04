@@ -22,33 +22,64 @@
     </div>
     <div class="slide-contents-book-wrapper">
       <div class="slide-contents-book-img-wrapper">
-        <img class="slide-contents-book-img" :src="cover">
+        <img class="slide-contents-book-img" :src="cover" />
       </div>
       <div class="slide-contents-book-info-wrapper">
-        <div class="slide-contents-book-title">{{metadata.title}}</div>
-        <div class="slide-contents-book-author">{{metadata.creator}}</div>
+        <div class="slide-contents-book-title">{{ metadata.title }}</div>
+        <div class="slide-contents-book-author">{{ metadata.creator }}</div>
       </div>
       <div class="slide-contents-book-progress-wrapper">
         <div class="slide-contents-book-progress">
-          <span class="progress">{{progress + '%'}}</span>
-          <span class="progress-text">{{$t('book.haveRead2')}}</span>
+          <span class="progress">{{ progress + "%" }}</span>
+          <span class="progress-text">{{ $t("book.haveRead2") }}</span>
         </div>
-        <div class="slide-contents-book-time">{{getReadTimeText()}}</div>
+        <div class="slide-contents-book-time">{{ getReadTimeText() }}</div>
       </div>
     </div>
+    <scroll class="slide-contents-list" :top="156" :bottom="48" ref="scroll">
+      <div
+        class="slide-contens-item"
+        v-for="(item, index) in navigation"
+        :key="index"
+      >
+        <span
+          class="slide-contents-item-label"
+          :class="{ selected: section === index }"
+          :style="contentItemStyle(item)"
+          @click="displayNavigation(item.href)"
+          >{{ item.label }}</span
+        >
+        <span class="slide-contents-item-page"></span>
+      </div>
+    </scroll>
   </div>
 </template>
 
 <script>
 import { ebookMixin } from '@/utils/mixin'
+import Scroll from '@/components/common/Scroll'
+import { px2rem } from '@/utils/utils'
 export default {
   mixins: [ebookMixin],
+  components: {
+    Scroll
+  },
   data () {
     return {
       searchVisible: false
     }
   },
   methods: {
+    displayNavigation (target) {
+      this.display(target, () => {
+        this.hideTitleAndMenu()
+      })
+    },
+    contentItemStyle (item) {
+      return {
+        marginLeft: `${px2rem(item.level * 15)}rem`
+      }
+    },
     showSearchPage () {
       this.searchVisible = true
     },
@@ -141,8 +172,26 @@ export default {
         }
       }
       .slide-contents-book-time {
-         font-size: px2rem(12);
-         margin-top: px2rem(5);
+        font-size: px2rem(12);
+        margin-top: px2rem(5);
+      }
+    }
+  }
+  .slide-contents-list {
+    padding: 0 px2rem(15);
+    box-sizing: border-box;
+    .slide-contens-item {
+      display: flex;
+      padding: px2rem(20) 0;
+      box-sizing: border-box;
+      border-bottom: px2rem(1) solid rgba(97, 97, 97, 0.18);
+      .slide-contents-item-label {
+        flex: 1;
+        font-size: px2rem(14);
+        line-height: px2rem(16);
+        @include ellipsis;
+      }
+      .slide-contents-item-page {
       }
     }
   }

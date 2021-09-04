@@ -97,6 +97,5 @@ export function getReadTimeByMinute (fileName) {
 }
 
 export function flatten (array) {
-  console.log(array)
   return [].concat(...array.map(item => [].concat(item, ...flatten(item.subitems))))
 }
