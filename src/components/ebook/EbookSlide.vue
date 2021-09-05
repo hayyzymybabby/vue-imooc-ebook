@@ -6,7 +6,7 @@
     >
       <transition name="slide-right">
         <div class="content" v-if="settingVisible === 3">
-          <div class="content-page-wrapper" v-if="!bookAvailable">
+          <div class="content-page-wrapper" v-if="bookAvailable">
             <div class="content-page">
               <component
                 :is="currentTab === 1 ? content : bookmark"
