@@ -1,6 +1,12 @@
 <template>
   <div class="ebook-reader">
     <div id="read"></div>
+    <div
+      class="ebook-reader-mask"
+      @click="onMaskClick"
+      @touchmove="move"
+      @touchend="moveEnd"
+    ></div>
   </div>
 </template>
 
@@ -22,6 +28,32 @@ global.ePub = Epub
 export default {
   mixins: [ebookMixin],
   methods: {
+    move (e) {
+      let offsetY = 0
+      if (this.firstOffsetY) {
+        offsetY = e.changedTouches[0].clientY - this.firstOffsetY
+        this.setOffsetY(offsetY)
+      } else {
+        this.firstOffsetY = e.changedTouches[0].clientY
+      }
+      e.preventDefault()
+      e.stopPropagation()
+    },
+    moveEnd (e) {
+      this.setOffsetY(0)
+      this.firstOffsetY = null
+    },
+    onMaskClick (e) {
+      const offsetX = e.offsetX
+      const width = window.innerWidth
+      if (offsetX > 0 && offsetX < width * 0.3) {
+        this.prevPage()
+      } else if (offsetX > width * 0.7 && offsetX < width) {
+        this.nextPage()
+      } else {
+        this.toggleTitleAndMenu()
+      }
+    },
     prevPage () {
       if (this.rendition) {
         this.rendition.prev().then(() => {
@@ -126,20 +158,27 @@ export default {
       })
     },
     parseBook () {
-      this.book.loaded.cover.then(cover => {
-        this.book.archive.createUrl(cover).then(url => {
+      this.book.loaded.cover.then((cover) => {
+        this.book.archive.createUrl(cover).then((url) => {
           this.setCover(url)
         })
       })
-      this.book.loaded.metadata.then(metadata => {
+      this.book.loaded.metadata.then((metadata) => {
         this.setMetadata(metadata)
       })
-      this.book.loaded.navigation.then(nav => {
+      this.book.loaded.navigation.then((nav) => {
         const navItem = flatten(nav.toc)
         function find (item, level = 0) {
-          return !item.parent ? level : find(navItem.filter(parentItem => parentItem.id === item.parent)[0], ++level)
+          return !item.parent
+            ? level
+            : find(
+              navItem.filter(
+                (parentItem) => parentItem.id === item.parent
+              )[0],
+              ++level
+            )
         }
-        navItem.forEach(item => {
+        navItem.forEach((item) => {
           item.level = find(item)
         })
         this.setNavigation(navItem)
@@ -151,7 +190,7 @@ export default {
       this.book = new Epub(url)
       this.setCurrentBook(this.book)
       this.initRendition()
-      this.initGesture()
+      // this.initGesture()
       this.parseBook()
       this.book.ready
         .then(() => {
@@ -176,4 +215,18 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.ebook-reader {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  .ebook-reader-mask {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 150;
+    top: 0;
+    left: 0;
+    background: transparent;
+  }
+}
 </style>
